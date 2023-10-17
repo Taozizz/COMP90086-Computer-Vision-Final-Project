@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import pickle
-from keras.preprocessing.image import load_img, img_to_array
+from tensorflow.keras.preprocessing.image import load_img, img_to_array
 import tensorflow as tf
 from keras.preprocessing import image
 from tensorflow.keras.applications import (
@@ -51,19 +51,23 @@ class FeatureExtractor:
         model_dir = os.path.join(self.base_output_dir, self.model_name, set_name)
         os.makedirs(model_dir, exist_ok=True)
         
-        # New dictionary to hold features
-        features_dict = {}
+        # New dictionaries to hold features
+        left_features_dict = {}
+        right_features_dict = {}
         
-        for key, value in data_dict.items():
-            if isinstance(value, list):  # Handling case where value is a list of image paths
-                features_dict[key] = [self.extract_features_from_image(img_path) for img_path in value]
-            else:  # Handling case where value is a single image path
-                features_dict[key] = self.extract_features_from_image(value)
+        for left_img_path, right_img_path in data_dict.items():
+            # Extract features for the left and right images
+            left_features_dict[left_img_path] = self.extract_features_from_image(left_img_path)
+            right_features_dict[right_img_path] = self.extract_features_from_image(right_img_path)
         
-        # Save the features file directly under the model and set name directories
-        output_path = os.path.join(model_dir, f"{set_name}_features.pkl")
-        with open(output_path, 'wb') as f:
-            pickle.dump(features_dict, f)
+        # Save the features files directly under the model and set name directories
+        left_output_path = os.path.join(model_dir, f"{set_name}_left_features.pkl")
+        right_output_path = os.path.join(model_dir, f"{set_name}_right_features.pkl")
+        with open(left_output_path, 'wb') as f:
+            pickle.dump(left_features_dict, f)
+        with open(right_output_path, 'wb') as f:
+            pickle.dump(right_features_dict, f)
+
     
     def extract_features_from_image(self, img_path, target_size=(224, 224)):
         # Extract features from a single image
@@ -72,3 +76,29 @@ class FeatureExtractor:
         img_preprocessed = self.preprocess_func(img)
         features = self.model.predict(img_preprocessed)
         return features
+    
+    def extract_and_save_features_for_test(self, data_dict, set_name):
+        model_dir = os.path.join(self.base_output_dir, self.model_name, set_name)
+        os.makedirs(model_dir, exist_ok=True)
+
+        left_features_dict = {}
+        right_features_dict = {}
+
+        for left_img_path, right_img_series in data_dict.items():
+            # Extract features for the left image
+            left_features_dict[left_img_path] = self.extract_features_from_image(left_img_path)
+
+            for right_img_path in right_img_series:
+                # Check if the feature has already been extracted to avoid duplicate work
+                if right_img_path not in right_features_dict:
+                    right_features_dict[right_img_path] = self.extract_features_from_image(right_img_path)
+
+        # Save the features
+        left_output_path = os.path.join(model_dir, f"{set_name}_left_features.pkl")
+        right_output_path = os.path.join(model_dir, f"{set_name}_right_features.pkl")
+
+        with open(left_output_path, 'wb') as f:
+            pickle.dump(left_features_dict, f)
+
+        with open(right_output_path, 'wb') as f:
+            pickle.dump(right_features_dict, f)
