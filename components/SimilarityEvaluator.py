@@ -68,3 +68,9 @@ class SimilarityEvaluator:
                 count += 1
         acc = count / len(top2_indices)
         return acc
+    
+    def get_total_params(self, model):
+        total_params = 0
+        for layer in model.layers:
+            total_params += layer.count_params()
+        return total_params
