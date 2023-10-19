@@ -37,3 +37,19 @@ class VectorComparator:
         intersection = np.sum(np.minimum(self.vector_a, self.vector_b))
         union = np.sum(np.maximum(self.vector_a, self.vector_b))
         return intersection / union
+    
+    def compute(self, metric):
+        if metric == "euclidean":
+            return self.euclidean_distance()
+        elif metric == "cosine":
+            return self.cosine_similarity()
+        elif metric == "manhattan":
+            return self.manhattan_distance()
+        elif metric == "mahalanobis":
+            return self.mahalanobis_distance()
+        elif metric == "pearson":
+            return self.pearson_correlation()
+        elif metric == "jaccard":
+            return self.jaccard_similarity()
+        else:
+            raise ValueError(f"Unknown metric: {metric}")
