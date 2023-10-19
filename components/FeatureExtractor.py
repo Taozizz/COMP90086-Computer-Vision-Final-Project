@@ -14,16 +14,22 @@ from tensorflow.keras.applications import (
 )
 
 class FeatureExtractor:
-    def __init__(self, model_name, base_output_dir):
+    def __init__(self, model_name, base_output_dir, fine_tune=False):
         self.model_name = model_name
         self.model, self.preprocess_func = self.get_model_and_preprocess(model_name)
         self.base_output_dir = base_output_dir
     
     @staticmethod
-    def get_model_and_preprocess(model_name):
+    def get_model_and_preprocess(model_name, fine_tune=False):
         if model_name == "resnet50":
             model = ResNet50(weights='imagenet', include_top=False, pooling='avg')
             preprocess_func = tf.keras.applications.resnet50.preprocess_input
+            
+            if fine_tune:
+                for layer in model.layers:
+                    layer.trainable = True
+                    
+                    
         elif model_name == "resnet101":
             model = ResNet101(weights='imagenet', include_top=False, pooling='avg')
             preprocess_func = tf.keras.applications.resnet.preprocess_input
@@ -102,3 +108,12 @@ class FeatureExtractor:
 
         with open(right_output_path, 'wb') as f:
             pickle.dump(right_features_dict, f)
+            
+    def fine_tune(self, train_data, train_labels, epochs, batch_size, validation_data=None):
+        # Compile the model for fine-tuning
+        optimizer = tf.keras.optimizers.Adam(learning_rate=1e-5) # Using a smaller learning rate for fine-tuning
+        model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+
+        # Train the model
+        model.fit(train_data, train_labels, epochs=epochs, batch_size=batch_size, validation_data=validation_data)
+

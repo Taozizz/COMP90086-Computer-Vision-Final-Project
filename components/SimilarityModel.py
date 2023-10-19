@@ -18,9 +18,19 @@ class SimilarityModel:
 
     def _create_embedding_model(self, input_shape):
         base_input = Input(input_shape)
-        x = Dense(256, activation='relu')(base_input)
-        x = Dense(128, activation='relu')(x)
-        x = Dense(128, activation='relu')(x)
+        x = Dense(256, activation='relu', kernel_regularizer=l2(0.001))(base_input)
+        x = BatchNormalization()(x)
+        x = Dropout(0.3)(x)
+
+        x = Dense(256, activation='relu', kernel_regularizer=l2(0.001))(x)
+        x = BatchNormalization()(x)
+        x = Dropout(0.3)(x)
+        
+        x = Dense(128, activation='relu', kernel_regularizer=l2(0.001))(x)
+        x = BatchNormalization()(x)
+        x = Dropout(0.3)(x)
+        
+        x = Dense(128, activation='relu', kernel_regularizer=l2(0.001))(x)
         return Model(base_input, x)
 
     def _create_triplet_model(self, input_shape):
@@ -41,14 +51,31 @@ class SimilarityModel:
         
         outputs = tf.keras.layers.Concatenate()([anchor_embedding, positive_embedding, negative_embedding])
         triplet_model = Model(inputs=[anchor_input, positive_input, negative_input], outputs=outputs)
-        triplet_model.compile(optimizer=Adam(lr=0.0001), loss=triplet_loss)
+        triplet_model.compile(optimizer=Adam(lr=0.001), loss=triplet_loss)
         return triplet_model
 
-    def train(self, anchors, positives, negatives):
-        self.triplet_model.fit([anchors, positives, negatives], np.zeros(len(anchors)), epochs=50, batch_size=32)
+    def train(self, anchors, positives, negatives, validation_data=None):
+        if validation_data:
+            val_anchors, val_positives, val_negatives = validation_data
+            validation_inputs = [val_anchors, val_positives, val_negatives]
+            validation_outputs = np.zeros(len(val_anchors))
+        else:
+            validation_inputs = None
+            validation_outputs = None
 
-    def compute_similarity(self, feature1, feature2, metric='cosine'):
-        comparator = VectorComparator(feature1, feature2)
+        self.triplet_model.fit([anchors, positives, negatives], np.zeros(len(anchors)), epochs=50, batch_size=32,
+                            validation_data=(validation_inputs, validation_outputs))
+
+
+    def compute_similarity(self, feature1, feature2, metric='cosine', use_model=True):
+        if use_model:
+            embedded_feature1 = self.embedding_model.predict(feature1.reshape(1, -1))[0]
+            embedded_feature2 = self.embedding_model.predict(feature2.reshape(1, -1))[0]
+        else:
+            embedded_feature1 = feature1
+            embedded_feature2 = feature2
+        
+        comparator = VectorComparator(embedded_feature1, embedded_feature2)
         if metric == 'cosine':
             return comparator.cosine_similarity()
         elif metric == 'euclidean':
