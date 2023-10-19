@@ -11,6 +11,9 @@ from tensorflow.keras.applications import (
     DenseNet201,
     VGG16,
     MobileNet,
+    MobileNetV2,
+    EfficientNetB0,
+    NASNetMobile,
 )
 
 class FeatureExtractor:
@@ -28,8 +31,16 @@ class FeatureExtractor:
             if fine_tune:
                 for layer in model.layers:
                     layer.trainable = True
-                    
-                    
+        
+        elif model_name == "EfficientNetB0":
+            model = EfficientNetB0(weights='imagenet', include_top=False, pooling='avg')
+            preprocess_func = tf.keras.applications.efficientnet.preprocess_input
+        elif model_name == "NASNetMobile":
+            model = NASNetMobile(weights='imagenet', include_top=False, pooling='avg')
+            preprocess_func = tf.keras.applications.nasnet.preprocess_input
+        elif model_name == "mobilenetv2": 
+            model = MobileNetV2(weights='imagenet', include_top=False, pooling='avg')
+            preprocess_func = tf.keras.applications.resnet.preprocess_input           
         elif model_name == "resnet101":
             model = ResNet101(weights='imagenet', include_top=False, pooling='avg')
             preprocess_func = tf.keras.applications.resnet.preprocess_input
@@ -46,7 +57,7 @@ class FeatureExtractor:
             model = MobileNet(weights='imagenet', include_top=False, pooling='avg')
             preprocess_func = tf.keras.applications.mobilenet.preprocess_input
         else:
-            valid_model_names = ["resnet50", "resnet101", "resnet152", "densenet201", "vgg16", "mobilenet"]
+            valid_model_names = ["resnet18", "resnet50", "resnet101", "resnet152", "densenet201", "vgg16", "mobilenet"]
             raise ValueError(f"Invalid model name. Valid model names are: {', '.join(valid_model_names)}")
 
         
