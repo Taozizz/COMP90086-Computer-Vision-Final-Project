@@ -53,3 +53,8 @@ pip install -r requirements.txt
 ```
 
 Subsequently, you can execute the Jupyter notebooks, which are pre-configured to run by default.
+
+
+## **📃 Report**
+View the report here:
+[Report.pdf](./CV%20Final.pdf)
