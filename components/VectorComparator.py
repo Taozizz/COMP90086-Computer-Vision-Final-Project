@@ -19,7 +19,6 @@ class VectorComparator:
         norm_b = np.linalg.norm(vector_b)
         return dot_product / (norm_a * norm_b)
 
-
     def manhattan_distance(self):
         return np.sum(np.abs(self.vector_a - self.vector_b))
 
@@ -42,7 +41,7 @@ class VectorComparator:
         if metric == "euclidean":
             return self.euclidean_distance()
         elif metric == "cosine":
-            return self.cosine_similarity()
+            return 1 - self.cosine_similarity()
         elif metric == "manhattan":
             return self.manhattan_distance()
         elif metric == "mahalanobis":
