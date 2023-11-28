@@ -2,15 +2,8 @@
 
 
 ## **👥 Team Members**
-
-- 📌 **Lujie Ma**
-  - **Student ID:** 1391364
-  - 📧 **Email:** [lujiem@student.unimelb.edu.au](mailto:lujiem@student.unimelb.edu.au)
-  
+- 📌 **Lujie Ma**  
 - 📌 **Tao Yu**
-  - **Student ID:** 1174280
-  - 📧 **Email:** [ty2@student.unimelb.edu.au](mailto:ty2@student.unimelb.edu.au)
-
 
 ## **📖 Project Overview**
 
